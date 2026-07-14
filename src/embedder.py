@@ -9,7 +9,8 @@ from src.config import (
 # Initialize the LangChain Google embeddings model.
 # This automatically reads the GOOGLE_API_KEY environment variable configured in Railway.
 embedding_model = GoogleGenerativeAIEmbeddings(
-    model="models/text-embedding-004"
+    model="gemini-embedding-001",
+    output_dimensionality=768
 )
 
 def get_embedding(text):
