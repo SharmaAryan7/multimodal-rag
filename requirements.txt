@@ -1,35 +1,18 @@
-# ===== Core Framework =====
-streamlit
-
-# ===== Document Parsing =====
-PyMuPDF
-pdfplumber
-python-docx
-python-pptx
-openpyxl
-beautifulsoup4
-markdown
-Pillow
-
-# ===== Vector Store + Embeddings =====
-chromadb
-
-# ===== LLM Orchestration =====
+# --- AI & LangChain Components ---
 langchain
 langchain-community
 langchain-google-genai
-google-generativeai
 python-dotenv
 
-# ===== Vision-Language Model (Florence-2) =====
+# --- Core Application Dependencies ---
+streamlit
+chromadb
+pymupdf
+
+# --- Vision Model (Florence-2) Dependencies ---
 transformers
 torch
-accelerate
-sentencepiece
+torchvision
+Pillow
 einops
 timm
-huggingface_hub
-
-# ===== Utilities =====
-requests
-tqdm
