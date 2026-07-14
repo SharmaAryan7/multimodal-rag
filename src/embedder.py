@@ -1,30 +1,39 @@
 import gc
-import ollama
+import os
+
 import chromadb
+import google.generativeai as genai
+
 from src.config import (
-    CHROMA_DB_DIR, COLLECTION_NAME,
-    EMBEDDING_MODEL, TOP_K_RESULTS
+    CHROMA_DB_DIR,
+    COLLECTION_NAME,
+    TOP_K_RESULTS,
 )
+
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
 def get_embedding(text):
-    """Get embedding for a single text using Ollama."""
-    response = ollama.embed(model=EMBEDDING_MODEL, input=text)
-    return response["embeddings"][0]
+    """Generate embeddings using Gemini."""
+    response = genai.embed_content(
+        model="models/text-embedding-004",
+        content=text,
+        task_type="retrieval_document"
+    )
+
+    return response["embedding"]
 
 
 class VectorStoreRepository:
-    """Repository pattern for ChromaDB access."""
-
     def __init__(self):
         self.client = chromadb.PersistentClient(path=CHROMA_DB_DIR)
+
         self.collection = self.client.get_or_create_collection(
             name=COLLECTION_NAME,
             metadata={"hnsw:space": "cosine"}
         )
 
     def add_items(self, ids, documents, embeddings, metadatas):
-        """Add or update items in the collection (upsert prevents duplicates)."""
         self.collection.upsert(
             ids=ids,
             documents=documents,
@@ -43,32 +52,30 @@ class VectorStoreRepository:
         return self.collection.count()
 
     def clear(self):
-        """Delete and recreate the collection."""
         self.client.delete_collection(COLLECTION_NAME)
+
         self.collection = self.client.get_or_create_collection(
             name=COLLECTION_NAME,
             metadata={"hnsw:space": "cosine"}
         )
 
 
-# Initialize global repository instance
 repo = VectorStoreRepository()
 
 
 def store_chunks(text_chunks, captioned_images):
-    """Embed and store all text chunks and captioned images with deduplication."""
     all_items = []
     counter = 0
     seen_texts = set()
-    duplicates_skipped = 0
 
-    # Process text chunks
     for chunk in text_chunks:
-        text_hash = hash(chunk["text"].strip().lower())
-        if text_hash in seen_texts:
-            duplicates_skipped += 1
+
+        key = hash(chunk["text"].strip().lower())
+
+        if key in seen_texts:
             continue
-        seen_texts.add(text_hash)
+
+        seen_texts.add(key)
 
         all_items.append({
             "id": f"chunk_{counter}",
@@ -81,15 +88,17 @@ def store_chunks(text_chunks, captioned_images):
                 "visual_content_path": ""
             }
         })
+
         counter += 1
 
-    # Process captioned images
-    for i, img in enumerate(captioned_images):
-        text_hash = hash(img["text"].strip().lower())
-        if text_hash in seen_texts:
-            duplicates_skipped += 1
+    for img in captioned_images:
+
+        key = hash(img["text"].strip().lower())
+
+        if key in seen_texts:
             continue
-        seen_texts.add(text_hash)
+
+        seen_texts.add(key)
 
         all_items.append({
             "id": f"chunk_{counter}",
@@ -102,39 +111,31 @@ def store_chunks(text_chunks, captioned_images):
                 "visual_content_path": img["path"]
             }
         })
+
         counter += 1
 
-    if duplicates_skipped > 0:
-        print(f"   Deduplication: skipped {duplicates_skipped} duplicate text chunk(s)")
-
-    # Embed and store in batches
     batch_size = 10
-    total = len(all_items)
 
-    for start in range(0, total, batch_size):
-        end = min(start + batch_size, total)
-        batch = all_items[start:end]
+    for start in range(0, len(all_items), batch_size):
 
-        ids = [item["id"] for item in batch]
-        texts = [item["text"] for item in batch]
-        metadatas = [item["metadata"] for item in batch]
+        batch = all_items[start:start + batch_size]
 
-        print(f"   Embedding batch {start//batch_size + 1}/{(total + batch_size - 1)//batch_size}")
+        ids = [x["id"] for x in batch]
+        docs = [x["text"] for x in batch]
+        metas = [x["metadata"] for x in batch]
 
-        embeddings = [get_embedding(text) for text in texts]
+        embeddings = [get_embedding(x) for x in docs]
 
-        repo.add_items(ids, texts, embeddings, metadatas)
+        repo.add_items(ids, docs, embeddings, metas)
 
-        # Free batch memory
-        del embeddings, batch
+        del embeddings
 
-    # Final memory cleanup
     gc.collect()
 
-    print(f"\n   Stored {total} unique items in ChromaDB (total: {repo.count()})")
+    print(f"Stored {repo.count()} chunks.")
 
 
 def query_collection(query_text, n_results=TOP_K_RESULTS):
-    """Query ChromaDB and return top matching results."""
-    query_embedding = get_embedding(query_text)
-    return repo.query(query_embedding, n_results)
+    embedding = get_embedding(query_text)
+
+    return repo.query(embedding, n_results)
