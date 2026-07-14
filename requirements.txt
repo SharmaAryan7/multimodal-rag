@@ -1,19 +1,34 @@
-# --- AI & LangChain Components ---
+# ===== Core Framework =====
+streamlit
+
+# ===== Document Parsing =====
+PyMuPDF
+pdfplumber
+python-docx
+python-pptx
+openpyxl
+beautifulsoup4
+markdown
+Pillow
+
+# ===== Vector Store + Embeddings =====
+chromadb
+
+# ===== LLM Orchestration =====
 langchain
 langchain-community
 langchain-google-genai
 python-dotenv
 
-# --- Core Application Dependencies ---
-streamlit
-chromadb
-pdfplumber
-pymupdf
-
-# --- Vision Model (Florence-2) Dependencies ---
+# ===== Vision-Language Model (Florence-2) =====
 transformers
 torch
-torchvision
-Pillow
+accelerate
+sentencepiece
 einops
 timm
+huggingface_hub
+
+# ===== Utilities =====
+requests
+tqdm
