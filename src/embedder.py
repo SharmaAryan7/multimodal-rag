@@ -16,9 +16,9 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 def get_embedding(text):
     """Generate embeddings using Gemini."""
     response = genai.embed_content(
-        model="models/text-embedding-004",
+        model="text-embedding-004",
         content=text,
-        task_type="retrieval_document"
+        task_type="RETRIEVAL_DOCUMENT",
     )
 
     return response["embedding"]
