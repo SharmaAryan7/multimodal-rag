@@ -15,11 +15,10 @@ Pillow
 chromadb
 
 # ===== LLM Orchestration =====
-langchain==0.3.27
-langchain-core==0.3.74
-langchain-community==0.3.27
-langchain-google-genai==2.1.10
-google-generativeai==0.8.5
+langchain
+langchain-community
+langchain-google-genai
+google-generativeai
 python-dotenv
 
 # ===== Vision-Language Model (Florence-2) =====
