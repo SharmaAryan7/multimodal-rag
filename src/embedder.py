@@ -15,3 +15,5 @@ def get_embedding(text: str) -> list[float]:
     # LangChain's embed_query returns a list of floats directly,
     # which is exactly the format ChromaDB expects.
     return embedding_model.embed_query(text)
+
+repo = "models/text-embedding-004"
