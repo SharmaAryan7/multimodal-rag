@@ -212,16 +212,14 @@ def stream_answer(query, conversation_history_text="(none)"):
     try:
         llm = get_llm()
         prompt_value = ANSWER_TEMPLATE.format_prompt(
-            history_block=history_block,
-            context=context,
-            question=query,
-        )
-        prompt_str = prompt_value.to_string()
+    history_block=history_block,
+    context=context,
+    question=query,
+)
 
-        # Use Ollama's native streaming
-        for chunk in llm.stream(prompt_str):
-            if chunk:
-                yield ("token", chunk)
+for chunk in llm.stream(prompt_value.to_messages()):
+    if chunk.content:
+        yield ("token", chunk.content)
     except Exception as e:
         yield ("error", str(e))
         return

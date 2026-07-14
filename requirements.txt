@@ -18,8 +18,9 @@ chromadb
 langchain
 langchain-core
 langchain-community
-langchain-ollama
-ollama
+langchain-google-genai
+google-generativeai
+python-dotenv
 
 # ===== Vision-Language Model (Florence-2) =====
 transformers

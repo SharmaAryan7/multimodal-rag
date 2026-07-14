@@ -14,10 +14,11 @@ EMBEDDING_MODEL = "nomic-embed-text"
 
 # Primary LLM — switched to Phi for low-latency inference
 # phi3:mini = 3.8B, fastest. phi3:medium = 14B, slower but higher quality.
-LLM_MODEL = "phi3:mini"
+LLM_MODEL = "gemini-2.5-flash"
+
 
 # Optional separate (smaller) model for query rewriting
-REWRITER_MODEL = "phi3:mini"
+REWRITER_MODEL = "gemini-2.5-flash"
 
 # ============================================
 # CHUNKING
